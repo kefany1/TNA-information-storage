@@ -1,0 +1,37 @@
+
+# Trimming
+
+module load trimmomatic
+java -jar /data/apps/trimmomatic/0.35/trimmomatic-0.35.jar PE mR122-L1-P1-GCTTGGTACCGG-READ1-Sequences.fastq mR122-L1-P1-GCTTGGTACCGG-READ2-Sequences.fastq 121619output_P1_Read1_paired.fq.gz 121619output_P1_Read1_unpaired.fq.gz 121619output_P1_Read2_paired.fq.gz 121619output_P1_Read2_unpaired.fq.gz ILLUMINACLIP:/data/apps/trimmomatic/0.35/adapters/TruSeq3-PE.fa:2:30:10
+
+--------------------------------------------------------------------------------------------------
+# SeqPrep
+
+#P1
+
+../SeqPrep -f 121619output_P1_Read1_paired.fq.gz -r 121619output_P1_Read2_paired.fq.gz -1 121619_P1_tile2r1.fastq.gz -2 121619_P1_tile2r2.fastq.gz -s 121619_P1_merged.fastq.gz -E 121619_P1_tile2-align.txt.gz -o 50 -m 0.1 -n 0.8
+
+--------------------------------------------------------------------------------------------------
+#Bowtie2 + samtools
+
+
+bowtie2 -p 10 --end-to-end -x sample -U 121619_P1_merged.fastq.gz | samtools view -bS - > 121619_P1-merged.bam
+
+
+--------------------------------------------------------------------------------------------------
+# igvtools sort
+
+#P2
+igvtools sort 121619_P2-merged.bam 121619_P2-merged.sorted.bam
+
+--------------------------------------------------------------------------------------------------
+# BAM to SAM file conversion
+
+samtools view -h -o 121619_P1-merged.sorted.sam 121619_P1-merged.sorted.bam
+
+--------------------------------------------------------------------------------------------------
+# samtools mpileup
+
+samtools mpileup -f sample.fasta 121619_P1-merged.sorted.bam  -a -o 121619_P1_mpileup.txt
+
+--------------------------------------------------------------------------------------------------
